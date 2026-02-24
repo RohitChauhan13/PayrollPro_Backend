@@ -1,5 +1,5 @@
 const express = require('express');
-require('dotenv').config();
+require('dotenv').config({ quiet: true });
 
 const testRoutes = require('./routes/test_route.js');
 const employeeRoutes = require('./routes/employee_route.js');
@@ -44,5 +44,8 @@ app.use('/api', commissionRoutes);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log();
+    console.log('----------------------------------------------');
+    console.log(`Server running at http://localhost:${PORT}/api`);
+    console.log();
 });
