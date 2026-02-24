@@ -252,6 +252,31 @@ const getSalaryByDate = async (req, res) => {
     }
 };
 
+const getAllSalariesByDate = async (req, res) => {
+  try {
+    const { date } = req.body;
+    
+    const [rows] = await pool.query(`
+      SELECT 
+        e.id AS employee_id,
+        e.name AS employee_name,
+        COALESCE(s.salary_date, ?) AS salary_date,
+        COALESCE(s.salary_amount, 0) AS salary_amount
+      FROM employees e
+      LEFT JOIN salary s ON e.id = s.employee_id AND s.salary_date = ?
+    `, [date, date]);
+    
+    res.json({
+      success: true,
+      data: rows,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false });
+  }
+};
+
+
 const getThisWeekSalary = async (req, res) => {
     try {
         const { employee_id } = req.params;
@@ -319,4 +344,5 @@ module.exports = {
     getSalaryBetweenDates,
     getSalaryByDate,
     getThisWeekSalary,
+    getAllSalariesByDate,
 };
