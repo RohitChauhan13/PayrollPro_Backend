@@ -54,33 +54,37 @@ const getAttendance = async (req, res) => {
         if (!attendance_date) {
             return res.status(400).json({
                 success: false,
-                message: 'Date is required'
+                message: "Attendance date is required"
             });
         }
 
-        const [result] = await pool.query('SELECT * FROM attendance WHERE attendance_date = ?', [attendance_date]);
+        const [rows] = await pool.query(
+            "SELECT * FROM attendance WHERE attendance_date = ?",
+            [attendance_date]
+        );
 
-        if (result.length > 0) {
-            res.status(200).json({
-                success: true,
-                count: result.length,
-                data: result
-            });
-        } else {
-            res.status(400).json({
+        if (rows.length === 0) {
+            return res.status(404).json({
                 success: false,
-                message: 'No attendance data found for this date'
+                message: "No attendance data found for this date"
             });
         }
+
+        return res.status(200).json({
+            success: true,
+            count: rows.length,
+            data: rows
+        });
 
     } catch (error) {
-        console.error("Error adding attendance:", error);
+        console.error("Error fetching attendance:", error);
+
         return res.status(500).json({
             success: false,
             message: "Internal Server Error"
         });
     }
-}
+};
 
 const updateAttendance = async (req, res) => {
     try {
