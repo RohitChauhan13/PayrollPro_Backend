@@ -142,8 +142,105 @@ const updateAttendance = async (req, res) => {
     }
 };
 
+const getAttendanceByDateRange = async (req, res) => {
+  try {
+    const { start_date, end_date } = req.query;
+
+    if (!start_date || !end_date) {
+      return res.status(400).json({
+        success: false,
+        message: "start_date and end_date are required",
+      });
+    }
+
+    const [rows] = await pool.query(
+      `
+      SELECT 
+        a.id,
+        a.attendance_date,
+        a.employee_id,
+        e.name as employee_name,
+        a.status
+      FROM attendance a
+      JOIN employees e ON a.employee_id = e.id
+      WHERE a.attendance_date BETWEEN ? AND ?
+      ORDER BY a.attendance_date ASC
+      `,
+      [start_date, end_date]
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: rows,
+    });
+  } catch (error) {
+    console.error("Date Range Attendance Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+const getThisWeekAttendance = async (req, res) => {
+  try {
+    const today = new Date();
+
+    const currentDay = today.getDay(); // 0-6
+
+    // Sunday
+    const sunday = new Date(today);
+    sunday.setDate(today.getDate() - currentDay);
+
+    // Saturday
+    const saturday = new Date(sunday);
+    saturday.setDate(sunday.getDate() + 6);
+
+    // Format YYYY-MM-DD
+    const formatDate = (date) => {
+      return date.toISOString().split("T")[0];
+    };
+
+    const start_date = formatDate(sunday);
+    const end_date = formatDate(saturday);
+
+    const [rows] = await pool.query(
+      `
+      SELECT 
+        a.id,
+        a.attendance_date,
+        a.employee_id,
+        e.name as employee_name,
+        a.status
+      FROM attendance a
+      JOIN employees e ON a.employee_id = e.id
+      WHERE a.attendance_date BETWEEN ? AND ?
+      ORDER BY a.attendance_date ASC
+      `,
+      [start_date, end_date]
+    );
+
+    return res.status(200).json({
+      success: true,
+      week_range: {
+        start_date,
+        end_date,
+      },
+      data: rows,
+    });
+  } catch (error) {
+    console.error("This Week Attendance Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
 module.exports = {
     addAttendance,
     getAttendance,
-    updateAttendance
+    updateAttendance,
+    getAttendanceByDateRange,
+    getThisWeekAttendance,
 }
