@@ -114,10 +114,10 @@ POST   /api/payroll/calculate
 
 ---
 
-### 🔐 Auth APIs (if enabled)
+### 🔐 Auth APIs
 ```
 POST   /api/login
-POST   /api/register
+POST   /api/register         # via firebase authentication
 ```
 
 ---
